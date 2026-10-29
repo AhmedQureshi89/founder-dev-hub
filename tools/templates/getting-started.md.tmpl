@@ -1,0 +1,104 @@
+# {{product.name}} — getting started as a new developer
+
+Welcome. This page gets you from an empty laptop to {{product.name}} running locally, in the order that
+works. It is written so that **you never have to do anything administrative** — every step that needs a
+permission, an account or a decision is already done by {{owner.name}} before you start, and if one is not,
+the fix is to tell them, not to work around it.
+
+**Rule zero: if a step fails and this page does not say what to do, stop and message {{owner.name}}.**
+Do not create accounts, request roles or copy credentials from anywhere else to keep moving. A stalled
+setup costs an hour; a workaround costs much more.
+
+---
+
+## 0. What {{product.name}} is, in one paragraph
+
+{{product.name}} is {{product.one_line}}. The long version — who it is for, what it never does, the
+principles every line of code answers to — is the [constitution](../.claude/context/constitution.md).
+Read §4 and §5 before you write anything; they apply to test copy, fixtures and commit messages too.
+
+## 1. The repositories
+
+```
+{{#repos}}   {{name}}{{^last}}  ──►  {{/last}}{{/repos}}
+{{#repos}}   {{what}}{{^last}} · {{/last}}{{/repos}}
+
+   {{hub.name}}  ── this repo: the roadmap, the briefs, and the rules
+```
+
+| Repo | GitHub | What it is |
+|---|---|---|
+| `{{hub.name}}` | `{{hub.github}}` | The hub. Read `CLAUDE.md` here first. |
+{{#repos}}| `{{name}}` | `{{github}}` | {{what}} |
+{{/repos}}
+## 2. What {{owner.name}} has already done for you
+
+You should have received, from {{owner.name}} directly:
+
+| | What | Why you need it |
+|---|---|---|
+| ✅ | Collaborator access to the repositories above | To clone and open pull requests |
+| ✅ | The configuration each service needs (its `.env` file, or the way to fetch it) | Each service reads its settings from a file that is **never committed** |
+| ✅ | The name of the roadmap item you are starting on | Work is assigned, one item at a time — [`team-roles.md`](team-roles.md) §2.7 |
+
+If any of the three is missing, ask. There is no self-service path.
+
+## 3. Install the tools (once)
+
+> ✍️ *{{owner.name}}: list the runtimes and tools the services need, with the version and a one-line check
+> for each — Git, the language runtimes, a container runtime if a database runs locally, the Claude Code
+> CLI. The table below is the shape.*
+
+| Tool | Get it from | Check it works |
+|---|---|---|
+| Git | https://git-scm.com | `git --version` |
+| Claude Code | https://claude.com/claude-code | `claude --version` |
+| Python 3.9+ (the hub's tools) | https://python.org | `python --version` |
+
+## 4. Clone the repositories, side by side
+
+Pick a folder. The code repos **should be siblings of the hub**, because `hub.json` names each one by a
+path relative to the hub ({{#repos}}{{#first}}`{{path}}`{{/first}}{{/repos}} and so on).
+
+```
+git clone https://github.com/{{hub.github}}.git
+{{#repos}}git clone https://github.com/{{github}}.git
+{{/repos}}```
+
+## 5. Fetch your configuration
+
+> ✍️ *{{owner.name}}: say how a developer gets each service's `.env` — a shared vault, a password manager,
+> a file handed over in person. Say what it must never do: be committed, pasted in chat, screenshotted.*
+
+**The `.env` files are the one thing on your machine that must stay on your machine.** `git status`
+before every commit — if `.env` ever shows up there, stop and tell {{owner.name}}.
+
+## 6. Run the services
+
+> ✍️ *{{owner.name}}: one block per service — the folder, the install command, the run command, the port,
+> and the one line that says it is up. The table below is the shape.*
+
+| Service | Start | It is up when |
+|---|---|---|
+{{#repos}}| `{{name}}` | `cd {{path}}` then … | … |
+{{/repos}}
+## 7. Before your first change — how work happens here
+
+- **Read [`CLAUDE.md`](../CLAUDE.md) in this repo.** It explains the ids (`{{prefixes}}`, `{{cross}}-`), the
+  roadmap, and the rule that *the constitution beats the code*.
+- **Work on a branch, open a pull request.** Nothing goes to the default branch directly. {{owner.name}}
+  reviews and merges. The full rule — which paths you may write, the branch name, the commit identity,
+  what the owner checks before merging — is [`team-roles.md`](team-roles.md).
+- **Each code repo has a `specs/` folder** with the requirements it is built from. Read the one for the
+  area you are touching before you touch it. `specs/CONVENTIONS.md` is the rules for that folder.
+- **One REQ per session.** In the code repo, `/spec-next` picks the next unchecked requirement of the
+  current phase, builds it, runs its check, ticks the box, commits, stops.
+- **Tests green before you ask for review.** A PR with red checks is not ready.
+- **When something is unclear, ask early**, with the file and line you are looking at.
+- **Found something another repo must do?** Do not fix it there. File a `▶ <ID> — inbox` note in the hub's
+  roadmap under that repo's item — [`hub-inbox`](../.claude/skills/hub-inbox/SKILL.md) is the procedure.
+
+## 8. When you leave
+
+Nothing for you to do. {{owner.name}} removes your repository access; delete your local `.env` files as a
+courtesy.

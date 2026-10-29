@@ -1,0 +1,191 @@
+# specs/ — Conventions
+
+> The rules for this directory. A session or a teammate reads this **before** creating, renaming, ticking
+> or auditing anything under `specs/`. Every rule here is written to be **mechanically checkable**; §7 is
+> the checker contract, and `tools/specs_check.py` in the hub asserts it from this repo's CI.
+
+---
+
+## 1. The hierarchy — what beats what
+
+```
+{{hub.name}}/                                   ← the hub. Source of truth.
+  .claude/context/constitution.md               what {{product.name}} IS. Beats the code
+  .claude/context/roadmap.md                    ids, owners, blockers, status
+  .claude/briefs/<item>.md          ─┐          problem, evidence, verdict gates
+  .claude/returns/<item>.md         ◄┼─┐        questions back to the author
+          │                          │ │
+          ▼                          │ │
+specs/mission.md             ← a POINTER upward. Never a document.
+specs/tech-specs.md          ← how THIS service is built
+specs/roadmap.md             ← what THIS service ships. Not status
+specs/CONVENTIONS.md         ← this file
+          │                          │ │
+          ▼                          │ │
+specs/phase-N/{requirements,specs,verification}.md ─┘ │
+                   written FROM the brief ─────────────┘ blocked BY a return
+```
+
+**Product truth is never written in this repo.** Audience, pricing, the product name, binding principles
+and the scorecard live in the constitution. If this repo states one of those, it is drift — even when it is
+correct today, because it will not be updated when the constitution changes.
+
+**This repo owns build truth:** architecture, schemas, endpoints, migrations, phases, verification evidence.
+
+---
+
+## 2. The constitution files (root of `specs/`)
+
+| File | Holds | Must be |
+|---|---|---|
+| `mission.md` | nothing | a pointer to the hub's `constitution.md` |
+| `tech-specs.md` | architecture, stack, data model, integrations, known debt | this service only |
+| `roadmap.md` | every phase, and why anything happened out of order | the index — **not status** |
+| `CONVENTIONS.md` | this file | — |
+
+`roadmap.md` is the index. **If a phase exists, it has a row there** — including phases delivered out of
+order, and phases owned by another repo that landed work here.
+
+---
+
+## 3. The phase triad (`specs/phase-N/`)
+
+Three files, spelled exactly this way:
+
+| File | Answers |
+|---|---|
+| `requirements.md` | *What must become true* — numbered `REQ-N.x`, no implementation |
+| `specs.md` | *How it is built* — files touched, schemas, migrations, contracts |
+| `verification.md` | *How it is proven* — checkboxes and runnable commands, one per REQ; the verdict gates verbatim |
+
+**`specs.md` is plural.** A checker that globs `specs.md` skips a misnamed `spec.md` **silently**, so this
+is not a style preference.
+
+Phase directories may carry a decimal (`phase-3.5`) when work is inserted between planned phases. The
+decimal is part of the directory name, not a sub-directory.
+
+### 3.1 When a phase may skip the triad
+
+A phase may be recorded **inline in `roadmap.md`** — a completed task list under its section, no `phase-N/`
+directory — **only if it has no verdict gate.** Mechanical work verified by "the code is gone" or "the
+endpoint answers" needs no triad. Anything that measures reality does.
+
+### 3.2 Where a triad comes from
+
+A triad is **written from a brief**, not invented. Briefs live in the hub at `.claude/briefs/<item>.md` and
+carry the problem, the evidence as re-runnable queries, the success metric, the non-goals and the verdict
+gates. The brief's author owns the *what and why*; this repo owns the *how and the proof*. Three rules:
+
+1. **`requirements.md` names the brief it was written from**, by id and path.
+2. **Verdict gates copy verbatim into `verification.md`.** Write checks *underneath* a gate; never edit the
+   gate text.
+3. **Re-run the brief's queries. Never copy its numbers.** Figures in a brief carry the date they were read.
+
+**When the brief is wrong, stop.** If a gate proves unmeasurable, or the brief assumes something the code
+contradicts, write a return in the hub (`.claude/returns/<item>-<question>.md`) carrying **was · now · why ·
+not-done · scope · before-or-after the check ran**, and go no further. A return blocks; it does not decide.
+
+### 3.3 Directory naming
+
+`specs/phase-N/`, where `N` is the number inside the hub id — `{{repo.prefix}}-3` is `specs/phase-3/`. The prefix
+identifies the repo and is redundant inside it.
+
+---
+
+## 4. Optional phase files
+
+| File | When | Holds |
+|---|---|---|
+| `baseline.md` | a measurement that cannot be taken later — the "before" of a change | a dated, read-only capture; a gate compares against it |
+| `RUN-HALTED.md` | the phase stopped on purpose | the reason, the exact gate and REQs outstanding, who decided. **A phase marked ⏸️ Parked must have one** |
+| `VERDICT-DRAFT.md` | gates measured, the owner has not ruled | the evidence assembled, **the verdict section deliberately unwritten**, because the session that did the work must not grade it. **A phase marked 🚦 Awaiting verdict must have one** |
+
+---
+
+## 5. Status vocabulary
+
+One set, used in the hub's roadmap and in every table here.
+
+| Marker | Means | Required evidence |
+|---|---|---|
+| 🔲 `Not Started` | nothing written, nothing built | — |
+| 📋 `Pre-specced` | triad written, work not begun | a `phase-N/` triad |
+| ⏳ `In Progress` | being worked now | — |
+| ⏸️ `Parked` | deliberately stopped | `RUN-HALTED.md` |
+| 🚦 `Awaiting verdict` | gates measured, owner has not ruled | `VERDICT-DRAFT.md` |
+| ✅ `Completed` | every box **this repo owns** ticked, no verdict gate of its own left open | `verification.md` fully ticked, or a completed inline list — boxes waived under §5.1 do not count |
+| 🟢 `Live` | in production **and** observed there | a dated production gate in `verification.md` |
+| 🟡 `Partial` | some delivered, the rest outstanding | a table saying which is which |
+| ➖ `N/A` | genuinely nothing to do | one line saying why |
+| ⛔ `Retired` | withdrawn by the owner's ruling; terminal | the hub row naming the ruling and the date; the phase's ticks stand |
+
+**Not in this vocabulary — do not use:** `⬜` (use `🔲` or `➖`); `🛠️`, `🔨` (use `⏳`). `🔴` marks a
+*failing metric*, never a phase status.
+
+### 5.1 A box another repo owns does not count against this repo's status
+
+An item split across repositories has its verdict gates **copied verbatim into every half's triad**. So this
+repo's `verification.md` can hold gates that measure a surface this repo does not own and cannot render. An
+unticked box whose notes carry
+
+```
+- **Not counted here — <who owns it, and why not here>.**
+```
+
+is **not counted** against this repo's phase status, and the checker's rule 8 skips it. Three rules keep it
+honest: the marker is **explicit, never inferred**; it goes in a note **underneath** the box, never in the
+gate's own text; and it is **not a tick** — the box stays `- [ ]`, because it has not been measured.
+
+---
+
+## 6. Loose files at the root of `specs/`
+
+A spec outside a `phase-N/` directory is allowed in exactly two cases: the work is owned by another repo's
+phase, or it is a standing document, not a phase (`known-issues.md`, say). **In both cases `roadmap.md`
+must carry a row or a note explaining why the file is loose.** New loose REQ specs are named
+`REQ-<phase>.<n>-<kebab-slug>.md`.
+
+---
+
+## 7. Checker contract
+
+What `tools/specs_check.py` (in the hub) asserts against this repo. Each line is a hard failure.
+
+**Structure**
+
+1. `specs/` contains `mission.md`, `tech-specs.md`, `roadmap.md`, `CONVENTIONS.md`.
+2. Every `specs/phase-*/` contains `requirements.md`, `specs.md`, `verification.md`. A file named `spec.md` fails.
+3. Every `phase-N/` directory has a row in the hub's roadmap, carrying a §5 marker.
+
+**Hierarchy**
+
+4. `specs/mission.md` is a pointer — it does not restate audience, pricing or product principles.
+5. None of the spellings listed in the hub's `hub.json` (`checks.forbidden_spellings`) appears outside
+   `specs/archive/`, `backups/` and `.agents/`.
+
+**Status integrity**
+
+6. Only §5 markers are used in the hub's roadmap, outside code spans.
+7. `⏸️ Parked` ⇒ `RUN-HALTED.md` exists. `🚦 Awaiting verdict` ⇒ `VERDICT-DRAFT.md` exists. *(reported, not enforced)*
+8. `✅ Completed` or `🟢 Live` in the hub ⇒ no unticked boxes in that phase's `verification.md` **that this repo owns** (§5.1).
+9. No verdict gate is ticked twice, and none is re-run after a recorded result. *(not automated — needs git history)*
+
+**Links and ownership**
+
+10. Every relative `.md` link under `specs/` resolves, anchors included.
+11. Every loose root file is named in `roadmap.md` (§6).
+12. Every triad written from a brief names that brief's id in `requirements.md` (§3.2).
+13. Every cross-repo REQ tagged `{{repo.prefix}}` in the hub is named somewhere under this repo's `specs/` (R13c).
+
+---
+
+## 8. Working rules
+
+1. **A verdict gate is never retried for a better number.** A recorded failure is a complete outcome.
+2. **The session that did the work does not grade it.** That is what `VERDICT-DRAFT.md` is for.
+3. **Amendments are dated and recorded in place**, not silently edited.
+4. **A bar with no owner is not a bar.** Assign it or delete it.
+
+---
+
+*Subordinate to the hub's `constitution.md`.*

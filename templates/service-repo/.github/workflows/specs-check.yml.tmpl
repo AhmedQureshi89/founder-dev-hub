@@ -1,0 +1,59 @@
+name: specs-check
+
+# Asserts the rules in specs/CONVENTIONS.md against this repo, using the checker that lives in the hub.
+# One implementation, in one place, run from every code repo's CI — so the rules cannot drift between repos.
+#
+# What it needs: a checkout of the hub beside this repo. If the hub is PUBLIC, nothing more. If the hub is
+# PRIVATE, add a repository secret HUB_TOKEN — a fine-grained personal access token with read access to the
+# hub's contents — in this repo's Settings → Secrets. Only the owner can add it.
+#
+# This job BLOCKS: a fresh repo starts green, and a check that is green on day one can block without ever
+# being switched off. If it goes red, the change that made it red is wrong, not the check. (A repo adopting
+# the hub with an existing backlog of findings may add `continue-on-error: true` to the job — and a dated
+# comment saying when it comes out.)
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: specs-check-\{{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  specs-check:
+    name: specs-check (governance)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out this repo
+        uses: actions/checkout@v4
+
+      - name: Check out the hub
+        uses: actions/checkout@v4
+        with:
+          repository: {{hub.github}}
+          token: ${{ secrets.HUB_TOKEN || github.token }}
+          path: .hub
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # --prefix is passed explicitly so neither the checkout folder's name nor a worktree can silence
+      # the hub-dependent rules.
+      - name: Run specs-check
+        run: |
+          python .hub/tools/specs_check.py . --hub .hub --prefix {{repo.prefix}} | tee specs-check.txt
+          exit "${PIPESTATUS[0]}"
+
+      - name: Publish the report
+        if: always()
+        run: |
+          {
+            echo '## specs-check'
+            echo
+            echo '```'
+            cat specs-check.txt 2>/dev/null || echo 'no report produced'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

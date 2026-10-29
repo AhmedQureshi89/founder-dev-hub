@@ -1,0 +1,26 @@
+{
+  "name": "founder-dev-hub",
+  "owner": {
+    "name": "Ahmed"
+  },
+  "metadata": {
+    "description": "Mods for a founder's development hub, read live from this checkout. See .claude/mods/README.md."
+  },
+  "plugins": [
+    {
+      "name": "hub-desk",
+      "source": "./.claude/mods/hub-desk",
+      "description": "A pane that shows what the hub holds for this repo: the open inbox notes and the owner's queue, re-read after every turn."
+    },
+    {
+      "name": "hub-gate",
+      "source": "./.claude/mods/hub-gate",
+      "description": "Holds a git commit or push until tools/specs_check.py passes; refuses writes to the hub's protected paths under a contributor's git identity."
+    },
+    {
+      "name": "phase-progress",
+      "source": "./.claude/mods/phase-progress",
+      "description": "A pane and a status line with how far the current phase is from done — its verification.md boxes ticked on origin — re-counted each time something merges."
+    }
+  ]
+}

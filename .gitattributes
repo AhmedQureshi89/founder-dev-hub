@@ -1,0 +1,3 @@
+# Every text file is LF in the repository and checked out as LF, on every OS.
+# A whole-file CRLF diff hides the real change; this rule keeps that from ever happening.
+* text=auto eol=lf

@@ -1,0 +1,15 @@
+{
+  "name": "hub-desk",
+  "version": "0.1.0",
+  "author": { "name": "Ahmed", "url": "https://github.com/AhmedQureshi89/founder-dev-hub" },
+  "description": "A pane that shows what the hub holds for this repo: the open inbox notes and the owner's queue, re-read after every turn.",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "hub": {
+      "type": "string",
+      "title": "Hub checkout",
+      "description": "Absolute path of your hub checkout — the folder that holds hub.json — used when this session is not inside the hub (a code repo). Leave empty inside the hub.",
+      "default": ""
+    }
+  }
+}

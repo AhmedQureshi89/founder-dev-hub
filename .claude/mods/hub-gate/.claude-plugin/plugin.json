@@ -1,0 +1,14 @@
+{
+  "name": "hub-gate",
+  "version": "0.1.0",
+  "author": { "name": "Ahmed", "url": "https://github.com/AhmedQureshi89/founder-dev-hub" },
+  "description": "Holds a git commit or push until tools/specs_check.py passes, and refuses writes to the hub's protected paths under a contributor's git identity.",
+  "userConfig": {
+    "hub": {
+      "type": "string",
+      "title": "Hub checkout",
+      "description": "Absolute path of your hub checkout — the folder that holds hub.json — used when this session is not inside the hub (a code repo). Leave empty inside the hub.",
+      "default": ""
+    }
+  }
+}

@@ -1,0 +1,205 @@
+# {{product.name}} — Roadmap
+
+> **This is the one planning layer.** Every item of work in every code repo has a row here, with an id,
+> its status and what is in its way. A code repo's own `specs/roadmap.md` says *what its phases are*;
+> this file says *where they stand*. Status lives here and only here.
+>
+> Companions: [`constitution.md`](constitution.md) — what {{product.name}} is ·
+> [`open-decisions.md`](open-decisions.md) — what only the owner can settle ·
+> [the briefs index](../briefs/README.md) · [the returns index](../returns/README.md).
+
+---
+
+## 🧑‍⚖️ Owner's queue — what waits on {{owner.name}}'s word
+
+*Every open decision and owner-only action, oldest first, each pointing at where it is recorded. The
+commit that records a ruling removes its line; a session that puts a new question to the owner adds
+one. The `hub-desk` pane shows this section in every session.*
+
+**Rulings**
+
+| Since | Question | Where |
+|---|---|---|
+{{#example}}| 10-02 | **{{decision}}-1** — Which reminder channel ships first, email or browser push? X-1's worker half cannot be built until this is ruled. | [`open-decisions.md`](open-decisions.md#d-1--which-reminder-channel-ships-first) |
+{{/example}}
+**Owner-only actions**
+
+| Since | Action | Where |
+|---|---|---|
+{{#example}}| 10-02 | Turn on branch protection for `main` in the three code repos (E1–E3 of the enforcement table) | [`team-roles.md`](../../onboarding/team-roles.md#7-enforcement--what-the-rules-ask-of-github) |
+{{/example}}{{^example}}
+*Nothing waits on you yet. A session adds a row here the moment it has a question only you can answer.*
+{{/example}}
+---
+
+## How to read an ID
+
+| Prefix | Means | Its triad lives in |
+|---|---|---|
+{{#repos}}| `{{prefix}}-` | work in `{{name}}` — {{what}} | `{{name}}/specs/phase-N/` |
+{{/repos}}| `{{cross}}-` | cross-repo work, or the hub's own | `.claude/context/phase-<id>-<slug>/` here, with each repo's half in its own `specs/` |
+| `{{decision}}-` | a decision only the owner can make | [`open-decisions.md`](open-decisions.md) |
+| `{{known_issue}}-` | a known issue, tracked until fixed or accepted | [the table at the end of this file](#known-issues) |
+
+- **Ids are never reused or renumbered.** `python tools/next_id.py <PREFIX> --show` reads every hub
+  document and prints the next free one; a mention anywhere takes an id, so write `{{cross}}-<next>` in prose
+  until the id is issued.
+- A cross-repo item gets **one row for the item** and **a half-row per repo** it touches (`{{first_prefix}}-<n>` for the
+  `{{first_prefix}}` half of `{{cross}}-<n>`, say). The half-row names the item, so the checker's R13 can find it.
+- A sub-id (`{{first_prefix}}-<n>.1`) is work inserted inside an item; it is a folder `phase-<n>.1/` in that repo.
+- **Never write a real id in prose that has not been issued** — this file is scanned for mentions, so an
+  example number here would take that id. Write `<n>`.
+
+## Status — the one vocabulary
+
+| Marker | Means | Needs |
+|---|---|---|
+| 🔲 `Not Started` / 🔲 `INTAKE` | nothing built; `INTAKE` is a brief just filed, no triad | — |
+| 📋 `Pre-specced` | triad written, work not begun | the triad on disk |
+| ⏳ `In Progress` | being worked now | — |
+| ⏸️ `Parked` | deliberately stopped | a `RUN-HALTED.md` in the phase saying why |
+| 🚦 `Awaiting verdict` | gates measured, the owner has not ruled | a `VERDICT-DRAFT.md` with the evidence and no verdict |
+| ✅ `Completed` | every box the repo owns ticked | `verification.md` fully ticked |
+| 🟢 `Live` | in production and observed there | a dated production gate |
+| 🟡 `Partial` | some delivered, the rest outstanding | a table saying which |
+| ➖ `N/A` | genuinely nothing to do | one line saying why |
+| ⛔ `Retired` | withdrawn by the owner's ruling; terminal | the ruling and its date |
+
+**Status comes from a row's status cell**, from the first marker in it. A marker used as a bullet in
+prose or in another cell proves an id exists and says nothing about its state. Not in the vocabulary:
+`⬜`, `🛠️`, `🔨` — the checker's R6 fails on them outside code spans.
+
+---
+
+## 🔥 NOW — what is committed
+
+*One committed outcome per repo per week. What is here is being worked; everything below waits.*
+
+| ID | Item | Repos | Status | The problem |
+|---|---|---|---|---|
+{{#example}}| **X-1** | **Reminders people act on** — brief: [`x-1.md`](../briefs/x-1.md) · triad: [`phase-x1-reminders-delivered/`](phase-x1-reminders-delivered/requirements.md) | WEB · API · JOB | 📋 `Pre-specced` — triad written 10-02; the JOB half waits on **D-1** | People add a plant and most never receive a first reminder. ↩ *▶ X-1 — intake fan-out* and *▶ X-1 — cross-review* below. |
+| **WEB-1** | **X-1, the web half** — the "remind me" question when a plant is added, and the reminder's link back | `garden-web` | 🔲 `Not Started` | REQ-X1.1, REQ-X1.5 |
+| **API-1** | **X-1, the API half** — the reminder columns on `plants`, the first `reminders` row, the row as the contract | `garden-api` | 🔲 `Not Started` | REQ-X1.2, REQ-X1.4 |
+| **JOB-1** | **X-1, the worker half** — send every due reminder within 15 minutes and record the send | `garden-worker` | 🔲 `Not Started` — waits on **D-1** | REQ-X1.3, REQ-X1.4 ↩ *▶ JOB-1 — inbox* below. |
+{{/example}}{{^example}}| | *Nothing committed yet. Intake a brief (`/hub-intake`), run the fan-out, and the owner moves its row here.* | | | |
+{{/example}}
+{{#example}}### ▶ JOB-1 — inbox: send the first reminder from the row the API writes, never from the web's request
+
+*Written 2026-10-02 by the API session while writing its half of X-1. Filed here because `garden-worker`
+must act and this session writes only its own repo and the hub. Not rung — no worker session was live.*
+
+**The fact.** The worker's current send loop reads `plants.next_water_at` directly (`garden-worker/jobs/remind.py:41`)
+and formats its own message. X-1's REQ-X1.4 makes the `reminders` row the contract between the API and
+the worker: the API writes `reminders(plant_id, due_at, channel, body)` (`garden-api/src/db/schema.ts:88`,
+added in this half), and the worker sends what the row says.
+
+**What this repo does.** Replace the read of `plants.next_water_at` with a read of `reminders` where
+`sent_at IS NULL AND due_at <= now()`; send the row's `body` over the row's `channel`; write `sent_at`.
+One REQ (REQ-X1.3), its own triad under `garden-worker/specs/phase-1/`.
+
+**What this repo does not do.** Decide the channel. The `channel` column exists, but which value the API
+writes first is **D-1**, the owner's.
+
+**Still the owner's.** D-1.
+
+Then append `✅ PICKED UP` here with the commit, what changed, and what is still unrun.
+
+### ▶ X-1 — cross-review: the one NO challenged, per `hub-cross-review`
+
+*Run 2026-10-01 by the hub session that filed X-1, on the three blocks of the fan-out note below.*
+
+| repo | fan-out said | C1 named-by | C2 last-event | C3 tree-read | verdict |
+|---|---|---|---|---|---|
+| WEB | YES | — | — | — | `YES` (REQ-X1.1, REQ-X1.5) |
+| API | YES | — | — | — | `YES` (REQ-X1.2, REQ-X1.4) |
+| JOB | NO — *"the reminder is created by the API, the worker just runs a loop"* | **Overturned.** API's block names the worker: *"the worker must send what the row says"*. | **Overturned.** The metric is `plant_added → first_reminder_delivered`; the only process that delivers anything is the worker's send loop (`garden-worker/jobs/remind.py:41`). The metric ends in the worker. | Read `garden-worker/`: no `reminders` table is read anywhere; the loop reads `plants.next_water_at`. Nothing the brief names exists there **yet** — which is the point: the REQ creates the dependency. | **`NEEDS REVIEW`** → round two asked JOB again with REQ-X1.3 and REQ-X1.4 in hand; it answered YES on both. Tagged accordingly. |
+
+### ▶ X-1 — intake fan-out, round one: what 3 repos found reading separately
+
+*Run 2026-10-01 by the hub session that filed X-1 (`a1b2c3d`), per `.claude/skills/hub-fan-out/` — one agent
+per repo in `hub.json`, each reading only its own tree, none able to see another's answer, each asked which
+of REQ-X1.1 … REQ-X1.5 are its own. Nothing here is tagged by this note; the cross-review above turns these
+answers into verdicts.*
+
+**Trees as read.** `garden-web` at `9f1e2d3` (`main`, 0 dirty). `garden-api` at `4c5d6e7` (`main`, 0 dirty).
+`garden-worker` at `8a9b0c1` (`main`, 2 dirty — a local `.env` and a log file).
+
+#### The three blocks, as returned
+
+```
+repo:      WEB
+read at:   9f1e2d3 on main, 0 dirty files
+answer:    YES
+reqs:      REQ-X1.1, REQ-X1.5
+evidence:  src/pages/AddPlant.tsx:52 (the add form has no reminder question) · src/lib/events.ts:14 (plant_added fires; no reminder_acted event exists)
+names:     API must accept remind_every_days and remind_at_local on POST /plants
+own tree:  the add form already asks for a watering interval (AddPlant.tsx:60) and discards it — the brief says the question is new; it is half-built
+
+repo:      API
+read at:   4c5d6e7 on main, 0 dirty files
+answer:    YES
+reqs:      REQ-X1.2, REQ-X1.4
+evidence:  src/db/schema.ts:70 (plants has next_water_at, no reminder columns) · src/routes/plants.ts:33 (POST writes next_water_at only)
+names:     the worker must send what the reminders row says, not compute its own message
+own tree:  next_water_at is stored without a time zone (schema.ts:74) — every "9:00" is UTC today
+
+repo:      JOB
+read at:   8a9b0c1 on main, 2 dirty files
+answer:    NO
+reqs:      none
+evidence:  (empty)
+names:     none
+own tree:  jobs/remind.py:41 reads plants.next_water_at every 10 minutes and sends an email with its own text
+```
+
+#### ✅ What the three reached independently
+
+| Finding | Agreement |
+|---|---|
+| There is no reminder record anywhere — a send leaves no row behind, so "did they get the first reminder" cannot be answered today | WEB (no event) + API (no table) + JOB (sends from `plants`) |
+| Times are stored without a time zone | API, from its schema; JOB, from a 9:00 that arrives at midday for one tester |
+
+#### 🔴 What API found about its own tree that the brief does not say — these shape the triad
+
+1. **`next_water_at` has no time zone** (`schema.ts:74`). REQ-X1.2 must add `timezone` to `plants` or every
+   reminder is wrong by the user's offset. Filed as **KI-1**.
+
+#### 🟡 What the NO repo handed to the YES repos — adjudicated by reading in round two
+
+| From | The check | Answer, read by the hub session in `garden-worker` at `8a9b0c1` |
+|---|---|---|
+| JOB | "the API creates the reminder, I just run a loop" | The loop *is* the delivery. `remind.py:41–58` is the only place a message leaves the system. Overturned in the cross-review above. |
+
+{{/example}}## NEXT — what follows
+
+| ID | Item | Repos | Status | The problem |
+|---|---|---|---|---|
+{{#example}}| **WEB-2** | **Show the plant in its reminder** — no brief yet | `garden-web` | 🔲 `Not Started` | A reminder that says "water your fern" lands better with the fern's photo in it |
+{{/example}}{{^example}}| | *Empty. Filed briefs land here with 🔲 `INTAKE` until the owner moves them.* | | | |
+{{/example}}
+## LATER — not now
+
+| ID | Item | Repos | Status | The problem |
+|---|---|---|---|---|
+{{#example}}| **API-2** | **A weekly digest instead of one reminder per plant** — no brief yet | `garden-api` · `garden-worker` | 🔲 `Not Started` | People with ten plants get ten emails a week |
+{{/example}}{{^example}}| | *Empty.* | | | |
+{{/example}}
+---
+
+## Known issues
+
+| ID | Issue | Where | State |
+|---|---|---|---|
+{{#example}}| **KI-1** | Watering times are stored without a time zone, so "9:00" is UTC for everyone | `garden-api/src/db/schema.ts:74` | 🟡 open — fixed by REQ-X1.2 when API-1 lands |
+{{/example}}{{^example}}| | *None recorded.* | | |
+{{/example}}
+## Working rules
+
+- **One committed outcome per repo per week.** 🔥 NOW holds it. Everything else waits, and *parked means
+  parked*: not worked on, not reported on, not re-raised until the committed outcome lands.
+- **A row moves on the owner's word**, recorded in the commit that moves it.
+- **Notes sit under the row of the item that must act**, newest first after that table: `▶ <ID> — inbox`
+  (a message to a repo — `python tools/inbox.py <PREFIX>` lists them), `▶ <ID> — intake fan-out` and
+  `▶ <ID> — cross-review` (records). A closed note moves, byte for byte, to `roadmap-archive.md` beside
+  this file (create it the first time), so a note cited by name is always found.
+- **The checker reads this file.** `python tools/check.py` before every commit.

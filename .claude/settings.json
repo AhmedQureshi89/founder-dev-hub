@@ -1,0 +1,7 @@
+{
+  "enabledPlugins": {
+    "hub-desk@founder-dev-hub": true,
+    "hub-gate@founder-dev-hub": true,
+    "phase-progress@founder-dev-hub": true
+  }
+}

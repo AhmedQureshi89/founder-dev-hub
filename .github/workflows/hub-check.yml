@@ -1,0 +1,47 @@
+name: hub-check
+
+# The hub checking itself, on every push and pull request: tools/check.py runs the checker in hub
+# mode (R6 status markers, R10h links, R13 REQ owners), inbox.py --check, next_id.py for every
+# prefix, and — while hub.json still says "example": true — render.py --check, so the shipped
+# example never drifts from its templates.
+#
+# It blocks on purpose. A hub carries no backlog of findings: if this goes red, the change that did
+# it is wrong, not the check. The rules that need a code repo beside the hub (R3, R8, R13c) run from
+# each code repo's own CI — templates/service-repo/.github/workflows/specs-check.yml.
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: hub-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hub:
+    name: hub-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the hub
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run every check
+        run: |
+          python tools/check.py | tee hub-check.txt
+          exit "${PIPESTATUS[0]}"
+
+      - name: Publish the report
+        if: always()
+        run: |
+          {
+            echo '## hub-check'
+            echo
+            echo '```'
+            cat hub-check.txt 2>/dev/null || echo 'no report produced'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

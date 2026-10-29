@@ -1,0 +1,17 @@
+# Briefs — the index
+
+One line per brief in this folder: **what it is, never where it stands.** Status and progress live in
+the item's row in [`roadmap.md`](../context/roadmap.md) and in the brief's own header; nothing is written
+back here as the item moves. The rules for briefs are in [`CLAUDE.md`](../../CLAUDE.md) §Briefs; the
+procedure for filing one is [`hub-intake`](../skills/hub-intake/SKILL.md); for writing one from an
+interview, [`hub-brief`](../skills/hub-brief/SKILL.md).
+
+A brief carries, in this order: **the problem** · **the evidence**, as queries anyone can run again ·
+**the success metric**, with the last event in its chain named · **non-goals** · **who is affected** ·
+**the verdict gates**, numbered 🚦-1 …, each a measurement with a bar and a date by which it is taken.
+
+⛔ marks a retired brief — the one state that never changes again.
+
+| Brief | Item |
+|---|---|
+| [`x-1.md`](x-1.md) | X-1 — Reminders people act on. Sam, in chat with Claude, filed 2026-10-01. WEB · API · JOB. |

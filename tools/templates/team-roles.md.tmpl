@@ -1,0 +1,146 @@
+# {{product.name}} — the team, and who may write what
+
+One rule underneath everything else: **nothing reaches the default branch of any {{product.name}} repository
+without the owner's review and verification.** The rest of this page says what that means for each person,
+for each path, and for the Claude Code sessions that do most of the typing.
+
+This page is referenced from [`CLAUDE.md`](../CLAUDE.md) §Who is who and is the record of the roles. Where
+this page and a Claude Code session's own judgment disagree, this page wins; where this page and `CLAUDE.md`
+disagree, `CLAUDE.md` wins and this page is behind. The people named here are the ones in `hub.json`; when
+someone joins or leaves, change `hub.json` first and re-render this page (`python tools/hub_init.py --from-hub`).
+
+---
+
+## 1. The people
+
+| | {{owner.name}} | {{#contributors}}{{name}}{{^last}} | {{/last}}{{/contributors}}{{^has_contributors}}*(no contributors yet)*{{/has_contributors}} |
+|---|---|{{#contributors}}---|{{/contributors}}{{^has_contributors}}---|{{/has_contributors}}
+| Role | Founder and owner | {{#contributors}}Contributor{{^last}} | {{/last}}{{/contributors}}{{^has_contributors}}—{{/has_contributors}} |
+| GitHub | `@{{owner.github}}` | {{#contributors}}`@{{github}}`{{^last}} | {{/last}}{{/contributors}}{{^has_contributors}}—{{/has_contributors}} |
+| Git commits as (`user.email`) | `{{owner.git_email}}` | {{#contributors}}`{{git_email}}`{{^last}} | {{/last}}{{/contributors}}{{^has_contributors}}—{{/has_contributors}} |
+| Merges to the default branch | **Yes** — in every repo, after review **and** verification | {{#contributors}}**Never**{{^last}} | {{/last}}{{/contributors}}{{^has_contributors}}—{{/has_contributors}} |
+| Branches | any | {{#contributors}}`{{branch_prefix}}<id>-<slug>`, by pull request{{^last}} | {{/last}}{{/contributors}}{{^has_contributors}}—{{/has_contributors}} |
+
+## 2. What only the owner does
+
+These are rulings, not tasks. A session or a teammate may prepare the material for any of them; only the
+owner performs the act.
+
+| | Act | Why it is the owner's alone |
+|---|---|---|
+| 1 | **Merges to the default branch** of every repo | The merge is the review. A branch merged without the owner has not been reviewed |
+| 2 | **Confirms a verdict gate** — moves it from `DRAFTED` to binding, amends its wording, rules on a return | A drafted gate is not binding until the owner confirms it; a return blocks, it does not decide |
+| 3 | **Ticks a verdict-gate box** or writes its PASS / FAIL record | *A tick means verified, not written.* Verification is the owner's act, and a gate is never retried for a better number |
+| 4 | **Changes production** — deploys, hosting, database schema, migrations, environment variables, secrets, DNS | Production is shared by real users and by every service; there is no rollback for a leaked secret |
+| 5 | **Edits the governing documents** — `CLAUDE.md`, everything under `.claude/context/`, `.claude/briefs/`, `.claude/returns/`, `.claude/skills/`, `.claude/mods/`, `tools/` | These are the rules the code is judged against. *The constitution beats the code*; whoever edits the constitution edits the standard |
+| 6 | **Administers access** — repository collaborators, hosting roles, shared credentials | A new developer never does anything administrative; this is the other side of that promise |
+| 7 | **Assigns work** — names the roadmap item and the REQ a contributor works on next | One committed outcome per repo per week; a contributor's item is one of them |
+
+## 3. What a contributor may write
+
+Every write is **on a branch, in a pull request, reviewed and verified by the owner before it merges.**
+Within that, a contributor's write set is:
+
+| | Where | What | Condition |
+|---|---|---|---|
+| ✅ | {{#repos}}`{{name}}`{{^last}}, {{/last}}{{/repos}} | Application code and tests | Inside the roadmap item the owner assigned — one REQ per pull request, the item's id in the branch name and the PR title |
+| ✅ | `<code repo>/specs/phase-N/` | The triad — `requirements.md`, `specs.md`, `verification.md` — **for the assigned item only** | Requirement text and checks; **never a gate's wording, never a tick, never a status marker**. Any gate they draft is marked `DRAFTED` and carries no authority |
+| ✅ | `{{hub.name}}/.claude/context/roadmap.md` | A `▶ <ID> — inbox` note under their own item's row, in the shape [`hub-inbox`](../.claude/skills/hub-inbox/SKILL.md) gives | Only when their work finds something another repo must act on. The note is the one thing they write in the hub, and it too arrives by pull request |
+| ✅ | Their own machine | `.env` files, from the owner | Never committed. `git status` before every commit; if `.env` appears, stop and tell the owner |
+
+Everything not in the table is outside the write set. A pull request from a contributor that touches any
+of the following is **closed, not reviewed**, with the reason written on it:
+
+| ⛔ | Path or act | Why |
+|---|---|---|
+| ⛔ | `CLAUDE.md`, `.claude/context/*` other than their own inbox note, `.claude/briefs/`, `.claude/returns/`, `.claude/skills/`, `.claude/mods/`, `tools/`, `onboarding/` | §2.5 — governing documents |
+| ⛔ | `specs/` of any item not assigned to them; any `verification.md` box, gate text or status marker anywhere | §2.2, §2.3 |
+| ⛔ | Database migrations, schema files, policies, seed data touching production tables | §2.4 — production |
+| ⛔ | `.github/workflows/`, Dockerfiles, deploy configuration, `.env*`, anything holding a secret | §2.4 — production and CI are how the rules are enforced |
+| ⛔ | Any commit whose author is not their own identity | §4 — attribution |
+| ⛔ | Copy, fixtures, comments or tests that break a binding principle of the [constitution](../.claude/context/constitution.md) §4 or its §5 "NOT" list | The constitution beats the code |
+
+**Reading is unrestricted.** A contributor reads every repository, every document, every brief and every
+return. The restriction is on writing, not on knowing.
+
+The `hub-gate` mod enforces the ⛔ paths at the tool call: under a contributor's git identity, an Edit or
+Write to a protected path is refused and points here.
+
+## 4. The commit rule
+
+1. **Never to the default branch.** Every change starts on a branch named `<prefix>/<item-id>-<slug>` —
+   for example {{#contributors}}{{#first}}`{{branch_prefix}}{{first_prefix}}-<n>-reminder-form`{{/first}}{{/contributors}}{{^has_contributors}}`alex/{{first_prefix}}-<n>-reminder-form`{{/has_contributors}} — and reaches the default branch
+   only through a pull request the owner merges.
+2. **One REQ per pull request.** The PR title starts with the item id and names the REQ. This matches the
+   hub's *one requirement per session* rule and keeps each review small enough to actually verify.
+3. **Reviewed *and* verified.** The owner merges only after they have both read the diff and run the check
+   the requirement names — the test, the checker, the gate. "Looks right" is a review; it is not a
+   verification. A PR the author believes finished but the owner has not verified is still open work.
+4. **Green before review.** CI red means the PR is not ready. `tools/specs_check.py` runs from every repo's
+   CI and must pass.
+5. **Own identity, always.** Before the first commit on any machine:
+
+   ```
+   git config --global user.name "<your name>"
+   git config --global user.email "<the address hub.json has for you>"
+   ```
+
+   A contributor's work authored as the owner is a defect and is rewritten before merge. A
+   `Co-Authored-By: Claude …` trailer stays; it says which tool typed, not who is responsible.
+6. **No force-push to a branch under review.** Add commits; the owner squashes at merge if they want to.
+7. **The owner's own commits follow the same shape** — branch, pull request, green CI — in the code repos.
+   In the hub the owner may commit to the default branch directly, because they are the reviewer and there
+   is nobody else to review them; the record in the commit message is the review.
+
+## 5. Claude Code sessions inherit the person, never widen them
+
+Claude Code is the only writer in the hub tree (`CLAUDE.md` §Who is who). That sentence is about the
+*tool*; this page is about the *person behind it*. The two compose:
+
+```
+   who is typing            what the session may do
+   ──────────────           ──────────────────────────────────────────────
+   {{owner.name}} (owner)   ──►  Claude Code  ──►  everything in CLAUDE.md
+   a contributor            ──►  Claude Code  ──►  exactly §3 of this page — on a branch, by PR
+   anyone else              ──►  Claude Code  ──►  stops and asks before writing anything
+```
+
+A session finds out whose it is by reading `git config user.email` in the repository it opened and looking
+the address up in `hub.json`: the owner's address applies `CLAUDE.md` in full; a contributor's applies §3
+and §4 of this page and refuses the ⛔ rows **even when asked** — the right answer is "that is the
+owner's; here is what I would propose", not the write; an unknown address stops.
+
+## 6. What the owner checks before merging a contributor's PR
+
+The verification in §4.3, as a list, so that it is the same every time:
+
+- [ ] The branch is `<prefix>/<item-id>-…` and the PR is one REQ of that item
+- [ ] Every commit's author is the contributor's own identity
+- [ ] No file in a ⛔ row of §3 is touched — path list read, not assumed
+- [ ] No `.env`, no secret, no credential in the diff
+- [ ] Nothing in the diff breaks a binding principle or the "NOT" list of the constitution
+- [ ] CI green; `tools/specs_check.py` green; the repo's own tests green
+- [ ] The check the REQ names was **run by the owner**, not read about, and its result written on the PR
+- [ ] No verification box ticked, no gate text changed, no status marker moved by the PR
+
+## 7. Enforcement — what the rules ask of GitHub
+
+This page is the rule. GitHub is where the rule is made mechanical. These are the owner's actions, once
+per repository; until they are done, the rule holds only by agreement.
+
+| | Action | Repos | State |
+|---|---|---|---|
+| E1 | Branch protection on the default branch: require a pull request, require one approving review, dismiss stale approvals on new commits | all | 🔲 |
+| E2 | Block force-pushes and deletions on the default branch | all | 🔲 |
+| E3 | Require status checks (CI, `specs-check`) to pass before merge | all | 🔲 |
+| E4 | Each contributor added as a collaborator with **Write**, not Maintain or Admin | all | 🔲 |
+
+A `CODEOWNERS` file adds something only when more than one person can approve a pull request; with one
+reviewer, E1 already routes every PR to the owner on every path. Revisit it the day a second reviewer joins.
+
+## 8. When a contributor leaves
+
+The owner removes the collaborator access (E4 reversed) and any shared credential; the contributor deletes
+local `.env` files as a courtesy. Open branches are either merged under §4 or closed with a note. Their
+entry leaves `hub.json`, this page is re-rendered, and the previous version stays in git history as the
+record of who could write what, and when.

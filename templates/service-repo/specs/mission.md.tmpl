@@ -1,0 +1,23 @@
+# Mission — a pointer
+
+> ⛔ **This is a pointer, not a document. Do not write product truth here.**
+
+What {{product.name}} is — who it is for, what it does, the binding principles, what it is NOT, the promises
+asserted by tests and the scorecard — lives in **one** place for every code repo:
+
+**`.claude/context/constitution.md`** in the **`{{hub.name}}`** repository{{#hub.github}} (`{{hub.github}}`){{/hub.github}}.
+
+## Why this file is empty
+
+A mission statement copied into each repo is edited in one and not the others, and then nobody knows which
+is true. The constitution is written once, in the hub, and beats the code everywhere. If this service
+behaves differently from what it says, that is a defect in the service — not an update to reality.
+
+## What still lives in this repo
+
+| File | Scope |
+|---|---|
+| [tech-specs.md](tech-specs.md) | How **this service** is built — architecture, stack, data model, debt |
+| [roadmap.md](roadmap.md) | What **this service** ships, and in what order |
+| [CONVENTIONS.md](CONVENTIONS.md) | The rules for everything under `specs/` |
+| `phase-N/` | The work itself — requirements, specs, verification |

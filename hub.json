@@ -1,0 +1,20 @@
+{
+  "kit": { "name": "founder-dev-hub", "version": "0.1.0" },
+  "example": true,
+  "product": {
+    "name": "Pocket Garden",
+    "one_line": "a web platform that reminds people to water their plants and shows them what it noticed"
+  },
+  "owner": { "name": "Sam", "github": "sam-example", "git_email": "sam@example.com" },
+  "hub": { "name": "pocket-garden-hub", "github": "sam-example/pocket-garden-hub", "default_branch": "main" },
+  "repos": [
+    { "prefix": "WEB", "name": "garden-web",    "what": "the web app people use",                      "github": "sam-example/garden-web",    "path": "../garden-web",    "default_branch": "main" },
+    { "prefix": "API", "name": "garden-api",    "what": "the API and the database",                     "github": "sam-example/garden-api",    "path": "../garden-api",    "default_branch": "main" },
+    { "prefix": "JOB", "name": "garden-worker", "what": "the background jobs that send the reminders",  "github": "sam-example/garden-worker", "path": "../garden-worker", "default_branch": "main" }
+  ],
+  "ids": { "cross": "X", "decision": "D", "known_issue": "KI" },
+  "contributors": [
+    { "name": "Alex", "github": "alex-example", "git_email": "alex@example.com", "branch_prefix": "alex/" }
+  ],
+  "checks": { "forbidden_spellings": ["PocketGarden", "Pocket garden"] }
+}

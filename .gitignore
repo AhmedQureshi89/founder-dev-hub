@@ -1,0 +1,17 @@
+# OS cruft
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# Editors and interrupted writes
+*.tmp
+*.swp
+
+# Local, never the record
+Claude outputs/
+.env
+.env.*

@@ -1,0 +1,63 @@
+# {{repo.name}} — {{repo.what}}
+
+This repo is one of {{product.name}}'s {{repo_count}} code repo(s). Its roadmap ids start with `{{repo.prefix}}-`.
+**The hub — `{{hub.name}}`{{#hub.github}} ({{hub.github}}){{/hub.github}} — is the source of truth** for what is built, in
+what order, by which repo and whether it is done. This repo owns **how** it is built and **the proof**.
+
+## Before any work
+
+1. Read the hub's `CLAUDE.md`, then the roadmap row of the item you are on, then its brief. The hub's
+   working copy is the folder beside this one that holds `hub.json`; its `hub.json` lists this repo as
+   `{{repo.prefix}}`.
+2. Read `specs/CONVENTIONS.md` here — the rules for everything under `specs/`, asserted by the checker.
+3. Find out whose session this is: `git config user.email`, looked up in the hub's `hub.json`. The owner's
+   address writes anything; a contributor's writes only their assigned item's code and triad text, on a
+   branch, by pull request (`onboarding/team-roles.md` in the hub). An unknown address stops and asks.
+
+## What lives where
+
+```
+specs/mission.md          a POINTER to the hub's constitution — never product truth
+specs/tech-specs.md       how THIS service is built: architecture, stack, data model, known debt
+specs/roadmap.md          this repo's phases, one row each — WHAT they are; WHERE they stand is the hub's
+specs/CONVENTIONS.md      the rules for this folder
+specs/phase-N/            requirements.md · specs.md · verification.md — written FROM the hub's brief
+```
+
+**Product truth is never written in this repo.** Who it is for, the principles, the promises, the numbers —
+all live in the hub's constitution. If this repo states one, that is drift, even when it is correct today.
+
+## The loop
+
+- **`/spec-phase N`** writes the triad for phase N from the brief: `requirements.md` (what and why, every
+  `REQ-N.x` numbered), `specs.md` (how, with a file plan), `verification.md` (how we will know — checks and
+  the **verdict gates copied verbatim from the brief**, never edited).
+- **`/spec-next`** builds exactly one unchecked requirement: reads the three files, writes the code, runs
+  that requirement's check, ticks its box, commits, stops. One REQ per session.
+- **A tick means verified, not written.** A verdict gate (🚦) is taken once, on its date, and never retried
+  for a better number. The session that did the work does not grade it: it writes a `VERDICT-DRAFT.md`
+  with the evidence and no verdict; the owner rules.
+- **Found something another repo must do?** Do not change that repo. File a `▶ <ID> — inbox` note in the
+  hub's roadmap under that item's row (the hub's `hub-inbox` skill is the procedure), then carry on.
+- **A gate you cannot measure, a brief the code contradicts** → a return in the hub (`.claude/returns/`),
+  which blocks until the owner rules. Never quietly deviate from a brief.
+
+## The checker
+
+```
+python <hub>/tools/specs_check.py . --hub <hub> --prefix {{repo.prefix}}
+```
+
+CI runs the same line on every push and pull request (`.github/workflows/specs-check.yml`). It asserts
+`specs/CONVENTIONS.md` §7: the files exist, every phase carries the triad, the hub has a row for every
+phase, a phase the hub calls done has no unticked boxes it owns, every link resolves, every cross-repo REQ
+tagged `{{repo.prefix}}` in the hub is named somewhere under `specs/` here. Red means not ready.
+
+## Standing rules
+
+- **The constitution beats the code.** A binding principle or a *NOT* line applies to test copy, fixtures,
+  comments and commit messages too.
+- **One committed outcome per week** for this repo; it is the row in the hub's 🔥 NOW. Parked means parked.
+- **Branch, pull request, green CI.** Nothing reaches `{{repo.default_branch}}` without the owner's review and
+  verification.
+- **Re-run the brief's queries, never copy its numbers.** A figure carries the date it was read.

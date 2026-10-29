@@ -1,0 +1,15 @@
+{
+  "name": "phase-progress",
+  "version": "0.1.0",
+  "author": { "name": "Ahmed", "url": "https://github.com/AhmedQureshi89/founder-dev-hub" },
+  "description": "A pane and a status line that show how far the current phase is from done — its verification.md boxes ticked on origin's default branch — re-counted each time something merges.",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "hub": {
+      "type": "string",
+      "title": "Hub checkout",
+      "description": "Absolute path of your hub checkout — the folder that holds hub.json, which says which lane this repo is — used when this session is not inside the hub (a code repo). Leave empty inside the hub.",
+      "default": ""
+    }
+  }
+}

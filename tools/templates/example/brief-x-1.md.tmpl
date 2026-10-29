@@ -1,0 +1,68 @@
+# X-1 — Reminders people act on
+
+> **Author:** Sam (the owner), in chat with Claude, handed over 2026-10-01.
+> **Filed by:** Claude Code, 2026-10-01, as `X-1` — the success metric ends in the worker and the form is
+> the web's, so it crosses repos.
+> **Status: 📋 `Pre-specced`** — filed 2026-10-01 as 🔲 `INTAKE`; fan-out and cross-review run the same day;
+> triad written 2026-10-02 at [`phase-x1-reminders-delivered/`](../context/phase-x1-reminders-delivered/requirements.md).
+>
+> **Filed as received.** The text below the rule is the document as handed over, unchanged.
+>
+> **Gates:** the author's, binding as written.
+>
+> **Fan-out:** run — see *▶ X-1 — intake fan-out, round one* in the roadmap. WEB YES (REQ-X1.1, X1.5), API
+> YES (REQ-X1.2, X1.4), JOB NO with an empty evidence line — overturned by the cross-review on C1 and C2;
+> round two: JOB YES (REQ-X1.3, X1.4).
+>
+> **What the text assumes that the hub does not do:** 1. that "delivered" can be measured today — it
+> cannot; no row records a send (API's fan-out finding). The triad's REQ-X1.2 creates the row. 2. that
+> the reminder question is new on the add form — the form already asks a watering interval and discards
+> it (WEB's finding). Recorded for the triad; not corrected below the rule.
+>
+> **The owner's calls, separated:** which channel the first reminder uses — **D-1**, open.
+
+---
+
+## The problem
+
+People add a plant and then nothing happens. Of the 418 plants added in the last 30 days, I cannot say how
+many got a first reminder, because a reminder leaves no record — the worker reads a date off the plant and
+sends an email with its own text. The people I asked say they "got one at some point" or "never got one".
+The product's whole promise is the reminder, and I cannot see whether it is kept.
+
+## Evidence
+
+Run again before quoting; the numbers were read 2026-10-01.
+
+| What | Query | Read 2026-10-01 |
+|---|---|---|
+| plants added, last 30 days | `select count(*) from plants where created_at > now() - interval '30 days'` | 418 |
+| reminders recorded | `select count(*) from reminders` | **the table does not exist** |
+| people with ≥ 1 plant and no watering logged in 14 days | `select count(distinct user_id) from plants p where not exists (select 1 from waterings w where w.plant_id = p.id and w.at > now() - interval '14 days')` | 131 of 212 |
+
+## Success metric
+
+`plant_added → first_reminder_delivered` within 24 hours, for people adding their first plant. The last
+event in the chain is **delivered** — whoever sends is on the critical path.
+
+## Non-goals
+
+- Browser push notifications (open as D-1; not in this item).
+- Snoozing, "water all", or more than one plant per reminder.
+- Changing how often a plant drinks — the default schedule stays.
+
+## Who is affected
+
+Everyone who adds a plant. Today 212 people; all have a verified email address.
+
+## Verdict gates
+
+Each is taken once, on the date it names, and never retried for a better number.
+
+- **🚦-1** — Of the people who add their **first** plant in the week after release, **≥ 60 %** receive a
+  first reminder within 24 hours. Measured from the `reminders` table: rows with `sent_at` not null and
+  `sent_at - plant.created_at ≤ 24 h`, over first plants created in that week.
+- **🚦-2** — Of first reminders delivered in that week, **≥ 30 %** are acted on within 48 hours
+  (`reminder_acted` recorded with the reminder's id).
+- **🚦-3** — **Zero** reminders sent for a plant deleted before the reminder's due time, over the same
+  week: `select count(*) from reminders r join plants p on p.id = r.plant_id where p.deleted_at < r.due_at and r.sent_at is not null`.
